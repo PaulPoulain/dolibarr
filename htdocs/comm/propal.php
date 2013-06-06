@@ -46,6 +46,7 @@ $langs->load('compta');
 $langs->load('bills');
 $langs->load('orders');
 $langs->load('products');
+
 if (! empty($conf->margin->enabled))
   $langs->load('margins');
 
@@ -313,6 +314,8 @@ else if ($action == 'add' && $user->rights->propal->creer)
     	{
     		$object->ref					= GETPOST('ref');
     		$object->ref_client 			= GETPOST('ref_client');
+    		$object->zip                   	= GETPOST('zipcode');
+			$object->town                  	= GETPOST('town');
     		$object->datep 					= $datep;
     		$object->date_livraison 		= $date_delivery;
     		$object->availability_id 		= GETPOST('availability_id');
@@ -1299,6 +1302,12 @@ print '</tr>';
 // Company
 print '<tr><td>'.$langs->trans('Company').'</td><td colspan="5">'.$soc->getNomUrl(1).'</td>';
 print '</tr>';
+
+// Zip / Town
+	print '<tr><td width="25%">'.$langs->trans('Zip').' / '.$langs->trans("Town").'</td><td colspan="'.(2+(($showlogo || $showbarcode)?0:1)).'">';
+	print $object->zip.($object->zip && $object->town?" / ":"").$object->town;
+	print "</td>";
+	print '</tr>';
 
 // Ligne info remises tiers
 print '<tr><td>'.$langs->trans('Discounts').'</td><td colspan="5">';

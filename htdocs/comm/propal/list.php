@@ -53,6 +53,7 @@ $search_ref=GETPOST('sf_ref')?GETPOST('sf_ref','alpha'):GETPOST('search_ref','al
 $search_refcustomer=GETPOST('search_refcustomer','alpha');
 $search_societe=GETPOST('search_societe','alpha');
 $search_montant_ht=GETPOST('search_montant_ht','alpha');
+$search_ville=trim(GETPOST("search_ville"));
 
 $sall=GETPOST("sall");
 $mesg=(GETPOST("msg") ? GETPOST("msg") : GETPOST("mesg"));
@@ -97,6 +98,7 @@ if (GETPOST("button_removefilter_x"))
     $search_refcustomer='';
     $search_societe='';
     $search_montant_ht='';
+    $search_nom="";
     $year='';
     $month='';
 }
@@ -133,7 +135,7 @@ if (! $sortfield) $sortfield='p.datep';
 if (! $sortorder) $sortorder='DESC';
 $limit = $conf->liste_limit;
 
-$sql = 'SELECT s.nom, s.rowid, s.client, ';
+$sql = 'SELECT s.nom, s.rowid,s.ville,s.client, ';
 $sql.= 'p.rowid as propalid, p.total_ht, p.ref, p.ref_client, p.fk_statut, p.fk_user_author, p.datep as dp, p.fin_validite as dfv,';
 if (! $user->rights->societe->client->voir && ! $socid) $sql .= " sc.fk_soc, sc.fk_user,";
 $sql.= ' u.login';
@@ -175,6 +177,7 @@ if ($viewstatut <> '')
 {
 	$sql.= ' AND p.fk_statut IN ('.$viewstatut.')';
 }
+if ($search_ville)   $sql .= " AND s.ville LIKE '%".$db->escape($search_ville)."%'";
 if ($month > 0)
 {
     if ($year > 0 && empty($day))
@@ -221,6 +224,7 @@ if ($result)
 	if ($search_user > 0)    $param.='&search_user='.$search_user;
 	if ($search_sale > 0)    $param.='&search_sale='.$search_sale;
 	if ($search_montant_ht)  $param.='&search_montant_ht='.$search_montant_ht;
+	if ($search_ville)		 $param.='$search_ville='.$search_ville;
 	print_barre_liste($langs->trans('ListOfProposals').' '.($socid?'- '.$soc->nom:''), $page, $_SERVER["PHP_SELF"],$param,$sortfield,$sortorder,'',$num);
 
 	// Lignes des champs de filtre
@@ -248,7 +252,7 @@ if ($result)
 	if (! empty($moreforfilter))
 	{
 	    print '<tr class="liste_titre">';
-	    print '<td class="liste_titre" colspan="9">';
+	    print '<td class="liste_titre" colspan="10">';
 	    print $moreforfilter;
 	    print '</td></tr>';
 	}
@@ -256,6 +260,7 @@ if ($result)
 	print '<tr class="liste_titre">';
 	print_liste_field_titre($langs->trans('Ref'),$_SERVER["PHP_SELF"],'p.ref','',$param,'',$sortfield,$sortorder);
 	print_liste_field_titre($langs->trans('Company'),$_SERVER["PHP_SELF"],'s.nom','',$param,'',$sortfield,$sortorder);
+	print_liste_field_titre($langs->trans('Town'),$_SERVER["PHP_SELF"],"s.ville","",$params,'',$sortfield,$sortorder);
 	print_liste_field_titre($langs->trans('RefCustomer'),$_SERVER["PHP_SELF"],'p.ref_client','',$param,'',$sortfield,$sortorder);
 	print_liste_field_titre($langs->trans('Date'),$_SERVER["PHP_SELF"],'p.datep','',$param, 'align="center"',$sortfield,$sortorder);
 	print_liste_field_titre($langs->trans('DateEndPropalShort'),$_SERVER["PHP_SELF"],'dfv','',$param, 'align="center"',$sortfield,$sortorder);
@@ -271,6 +276,9 @@ if ($result)
 	print '</td>';
 	print '<td class="liste_titre" align="left">';
 	print '<input class="flat" type="text" size="16" name="search_societe" value="'.$search_societe.'">';
+	print '</td>';
+	print '</td><td class="liste_titre" align="left">';
+	print '<input class="flat" size="10" type="text" name="search_ville" value="'.$search_ville.'">';
 	print '</td>';
 	print '<td class="liste_titre">';
 	print '<input class="flat" size="10" type="text" name="search_refcustomer" value="'.$search_refcustomer.'">';
@@ -341,8 +349,13 @@ if ($result)
 		print $companystatic->getNomUrl(1,'customer');
 		print '</td>';
 
-		// Customer ref
+		//ville
 		print '<td nowrap="nowrap">';
+		print $objp->ville;
+		//print "<td>".$objp->ville."</td>\n";
+		
+		// Customer ref
+		print '<td align="center">';
 		print $objp->ref_client;
 		print '</td>';
 
