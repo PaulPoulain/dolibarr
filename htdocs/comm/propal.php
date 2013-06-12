@@ -1704,6 +1704,12 @@ if ($action != 'presend')
 
 	if ($action != 'statut' && $action <> 'editline')
 	{
+		//Creer un evenement
+		 if ($conf->agenda->enabled)
+		{
+			print '<a class="butAction" href="'.DOL_URL_ROOT.'/comm/action/fiche.php?action=create&socid='.$object->socid.'">'.$langs->trans("AddAction").'</a>';
+			
+		}
 		// Validate
 		if ($object->statut == 0 && $user->rights->propal->valider)
 		{
