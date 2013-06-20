@@ -98,7 +98,6 @@ if (GETPOST("button_removefilter_x"))
     $search_refcustomer='';
     $search_societe='';
     $search_montant_ht='';
-    $search_nom="";
     $year='';
     $month='';
 }
@@ -224,7 +223,7 @@ if ($result)
 	if ($search_user > 0)    $param.='&search_user='.$search_user;
 	if ($search_sale > 0)    $param.='&search_sale='.$search_sale;
 	if ($search_montant_ht)  $param.='&search_montant_ht='.$search_montant_ht;
-	if ($search_ville)		 $param.='$search_ville='.$search_ville;
+	if ($search_ville)		 $param.='&search_ville='.$search_ville;
 	print_barre_liste($langs->trans('ListOfProposals').' '.($socid?'- '.$soc->nom:''), $page, $_SERVER["PHP_SELF"],$param,$sortfield,$sortorder,'',$num);
 
 	// Lignes des champs de filtre
