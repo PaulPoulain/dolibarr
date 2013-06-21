@@ -559,54 +559,57 @@ function show_contacts($conf,$langs,$db,$object,$backtopage='')
 
             print "<tr ".$bc[$var].">";
 
-            print '<td>';
-            $contactstatic->id = $obj->rowid;
-            $contactstatic->name = $obj->name;
-            $contactstatic->firstname = $obj->firstname;
-            print $contactstatic->getNomUrl(1);
-            print '</td>';
+			if(!preg_match("/(p|P)(arti|ARTI)((e|E)?)/",$obj->poste))
+			{
+				print '<td>';
+				$contactstatic->id = $obj->rowid;
+				$contactstatic->name = $obj->name;
+				$contactstatic->firstname = $obj->firstname;
+				print $contactstatic->getNomUrl(1);
+				print '</td>';
 
-            print '<td>'.$obj->poste.'</td>';
+				print '<td>'.$obj->poste.'</td>';
 
-            $country_code = getCountry($obj->fk_pays, 2);
+				$country_code = getCountry($obj->fk_pays, 2);
 
-            // Lien click to dial
-            print '<td>';
-            print dol_print_phone($obj->phone,$country_code,$obj->rowid,$object->id,'AC_TEL');
-            print '</td>';
-            print '<td>';
-            print dol_print_phone($obj->phone_mobile,$country_code,$obj->rowid,$object->id,'AC_TEL');
-            print '</td>';
-            print '<td>';
-            print dol_print_phone($obj->fax,$country_code,$obj->rowid,$object->id,'AC_FAX');
-            print '</td>';
-            print '<td>';
-            print dol_print_email($obj->email,$obj->rowid,$object->id,'AC_EMAIL');
-            print '</td>';
+				// Lien click to dial
+				print '<td>';
+				print dol_print_phone($obj->phone,$country_code,$obj->rowid,$object->id,'AC_TEL');
+				print '</td>';
+				print '<td>';
+				print dol_print_phone($obj->phone_mobile,$country_code,$obj->rowid,$object->id,'AC_TEL');
+				print '</td>';
+				print '<td>';
+				print dol_print_phone($obj->fax,$country_code,$obj->rowid,$object->id,'AC_FAX');
+				print '</td>';
+				print '<td>';
+				print dol_print_email($obj->email,$obj->rowid,$object->id,'AC_EMAIL');
+				print '</td>';
 
-            if (! empty($conf->agenda->enabled) && $user->rights->agenda->myactions->create)
-            {
-                print '<td align="center">';
-                if (! empty($conf->global->AGENDA_USE_EVENT_TYPE))
-                {
-                	print '<a href="'.DOL_URL_ROOT.'/comm/action/fiche.php?action=create&actioncode=AC_RDV&contactid='.$obj->rowid.'&socid='.$object->id.'&backtopage='.urlencode($backtopage).'">';
-                	print img_object($langs->trans("Rendez-Vous"),"action_rdv");
-                	print '</a> ';
-                }
-                print '<a href="'.DOL_URL_ROOT.'/comm/action/fiche.php?action=create&actioncode=&contactid='.$obj->rowid.'&socid='.$object->id.'&backtopage='.urlencode($backtopage).'">';
-                print img_object($langs->trans("Event"),"action");
-                print '</a></td>';
-            }
+				if (! empty($conf->agenda->enabled) && $user->rights->agenda->myactions->create)
+				{
+					print '<td align="center">';
+					if (! empty($conf->global->AGENDA_USE_EVENT_TYPE))
+					{
+						print '<a href="'.DOL_URL_ROOT.'/comm/action/fiche.php?action=create&actioncode=AC_RDV&contactid='.$obj->rowid.'&socid='.$object->id.'&backtopage='.urlencode($backtopage).'">';
+						print img_object($langs->trans("Rendez-Vous"),"action_rdv");
+						print '</a> ';
+					}
+					print '<a href="'.DOL_URL_ROOT.'/comm/action/fiche.php?action=create&actioncode=&contactid='.$obj->rowid.'&socid='.$object->id.'&backtopage='.urlencode($backtopage).'">';
+					print img_object($langs->trans("Event"),"action");
+					print '</a></td>';
+				}
 
-            if ($user->rights->societe->contact->creer)
-            {
-                print '<td align="right">';
-                print '<a href="'.DOL_URL_ROOT.'/contact/fiche.php?action=edit&amp;id='.$obj->rowid.'&amp;backtopage='.urlencode($backtopage).'">';
-                print img_edit();
-                print '</a></td>';
-            }
+				if ($user->rights->societe->contact->creer)
+				{
+					print '<td align="right">';
+					print '<a href="'.DOL_URL_ROOT.'/contact/fiche.php?action=edit&amp;id='.$obj->rowid.'&amp;backtopage='.urlencode($backtopage).'">';
+					print img_edit();
+					print '</a></td>';
+				}
 
-            print "</tr>\n";
+				print "</tr>\n";
+			}
             $i++;
         }
     }
