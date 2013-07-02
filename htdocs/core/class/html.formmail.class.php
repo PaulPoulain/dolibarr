@@ -379,7 +379,7 @@ class FormMail
             {
                 if (! empty($this->withtofree))
                 {
-                    $out.= '<input size="'.(is_array($this->withto)?"30":"60").'" id="sendto" name="sendto" value="'.(! is_array($this->withto) && ! is_numeric($this->withto)? (isset($_REQUEST["sendto"])?$_REQUEST["sendto"]:$this->withto) :"").'" />';
+                    $out.= '<input size="'.(is_array($this->withto)?"30":"48").'" id="sendto" name="sendto" value="'.(! is_array($this->withto) && ! is_numeric($this->withto)? (isset($_REQUEST["sendto"])?$_REQUEST["sendto"]:$this->withto) :"").'" />';
                 }
                 if (! empty($this->withto) && is_array($this->withto))
                 {
