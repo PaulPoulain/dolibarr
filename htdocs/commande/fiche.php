@@ -2339,6 +2339,8 @@ if ($action == 'send' && ! GETPOST('addfile') && ! GETPOST('removedfile') && ! G
 				 * Linked object block
 				*/
 				$somethingshown=$object->showLinkedObjectBlock();
+				$linkedObjectBlock = $GLOBALS['linkedObjectBlock'];
+				$total_facture=0;
 
 				print '</td><td valign="top" width="50%">';
 
@@ -2348,6 +2350,18 @@ if ($action == 'send' && ! GETPOST('addfile') && ! GETPOST('removedfile') && ! G
 				$somethingshown=$formactions->showactions($object,'order',$socid);
 
 				print '</td></tr></table>';
+				foreach($linkedObjectBlock as $obj)
+				{
+					
+					$total_facture = $total_facture + $obj->total_ht;
+				}
+			}
+			if ($total_facture >= $object->total_ht)
+			{
+				$object->statut=$object->statut + 1;
+				$ret=$object->classifyBilled();
+				return $_SERVER["PHP_SELF"]."?id=".$object->id;
+			
 			}
 
 
