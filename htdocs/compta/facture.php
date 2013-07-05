@@ -3113,6 +3113,16 @@ else if ($id > 0 || ! empty($ref))
                         }
                     }
                 }
+                
+                //
+                if ($object->mode_reglement_code == 'VIR' && $user->rights->facture->creer)
+                {   
+                    print '<a class="butAction" href="banque.php?facid='.$object->id.'&amp;action=create">'.$langs->trans('PaymentMode').'</a>';
+                }
+                
+                
+                
+                
 
                 // Reopen a standard paid invoice
                 if (($object->type == 0 || $object->type == 1) && ($object->statut == 2 || $object->statut == 3))				// A paid invoice (partially or completely)
