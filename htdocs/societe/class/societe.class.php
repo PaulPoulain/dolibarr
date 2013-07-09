@@ -1628,7 +1628,15 @@ class Societe extends CommonObject
                     $obj = $this->db->fetch_object($resql);
                     if ($mode == 'email') $property=$obj->email;
                     else if ($mode == 'mobile') $property=$obj->phone_mobile;
-                    $contact_property[$obj->rowid] = trim($obj->firstname." ".$obj->name)." [".$obj->poste."] "." &lt;".$property."&gt;";
+                    if (!empty($obj->poste))
+                    {
+						$contact_property[$obj->rowid] = trim($obj->firstname." ".$obj->name)." (".$obj->poste.") "." &lt;".$property."&gt;";
+					}
+					else
+					{
+						$contact_property[$obj->rowid] = trim($obj->firstname." ".$obj->name)." &lt;".$property."&gt;";
+					}
+						
                     $i++;
                 }
             }
