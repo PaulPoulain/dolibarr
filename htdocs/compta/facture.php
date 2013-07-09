@@ -38,6 +38,7 @@ require_once DOL_DOCUMENT_ROOT . '/core/class/html.formother.class.php';
 require_once DOL_DOCUMENT_ROOT . '/core/lib/invoice.lib.php';
 require_once DOL_DOCUMENT_ROOT . '/core/lib/functions2.lib.php';
 require_once DOL_DOCUMENT_ROOT . '/core/lib/date.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
 
 if (! empty($conf->commande->enabled)) {
 	require DOL_DOCUMENT_ROOT . '/commande/class/commande.class.php';
@@ -51,6 +52,10 @@ $langs->load('bills');
 $langs->load('companies');
 $langs->load('products');
 $langs->load('main');
+$langs->load("admin");
+$langs->load("errors");
+$langs->load('other');
+$langs->load('companies');
 if (! empty($conf->margin->enabled))
   $langs->load('margins');
 
@@ -106,6 +111,30 @@ $hookmanager->initHooks(array('invoicecard'));
 
 $parameters=array('socid'=>$socid);
 $reshook=$hookmanager->executeHooks('doActions',$parameters,$object,$action);    // Note that $action and $object may have been modified by some hooks
+
+/*
+ * Actions
+ */
+
+if ($action == 'setribchq')
+{
+	$rib = GETPOST('rib','alpha');
+	$chq = GETPOST('chq','alpha');
+
+	$res = dolibarr_set_const($db, "FACTURE_RIB_NUMBER",$rib,'chaine',0,'',$conf->entity);
+    $res = dolibarr_set_const($db, "FACTURE_CHQ_NUMBER",$chq,'chaine',0,'',$conf->entity);
+
+	if (! $res > 0) $error++;
+
+ 	if (! $error)
+    {
+        $mesg = "<font class=\"ok\">".$langs->trans("SetupSaved")."</font>";
+    }
+    else
+    {
+        $mesg = "<font class=\"error\">".$langs->trans("Error")."</font>";
+    }
+}
 
 
 // Action clone object
@@ -3428,6 +3457,74 @@ else if ($id > 0 || ! empty($ref))
     {
         dol_print_error($db,$object->error);
     }
+    if ($object->mode_reglement_code == 'VIR' && $user->rights->facture->creer)
+    {   
+
+		/*
+		 *  Modes de reglement
+		 *
+		 */
+		print '<br>';
+		print_titre($langs->trans("SuggestedPaymentModesIfNotDefinedInInvoice"));
+
+		print '<form action="'.$_SERVER["PHP_SELF"].'?facid='.$id.'" method="POST">';
+		print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'" />';
+
+		//print $id;
+		print '<table class="noborder" width="100%">';
+		$var=True;
+
+		print '<tr class="liste_titre">';
+		print '<td>';
+		print '<input type="hidden" name="action" value="setribchq">';
+		print $langs->trans("PaymentMode").'</td>';
+		print '<td align="right"><input type="submit" class="button" value="'.$langs->trans("Modify").'"></td>';
+		print "</tr>\n";
+		$var=!$var;
+		print '<tr '.$bc[$var].'>';
+		print "<td>".$langs->trans("SuggestPaymentByRIBOnAccount")."</td>";
+		print "<td>";
+		if (! empty($conf->banque->enabled))
+		{
+			$sql = "SELECT rowid, label";
+			$sql.= " FROM ".MAIN_DB_PREFIX."bank_account";
+			$sql.= " WHERE clos = 0";
+			$sql.= " AND courant = 1";
+			$sql.= " AND entity = ".$conf->entity;
+			$resql=$db->query($sql);
+			if ($resql)
+			{
+				$num = $db->num_rows($resql);
+				$i = 0;
+				if ($num > 0)
+				{
+					print '<select name="rib" class="flat" id="rib">';
+					print '<option value="0">'.$langs->trans("DoNotSuggestPaymentMode").'</option>';
+					while ($i < $num)
+					{
+						$row = $db->fetch_row($resql);
+
+						print '<option value="'.$row[0].'"';
+						print $conf->global->FACTURE_RIB_NUMBER == $row[0] ? ' selected="selected"':'';
+						print '>'.$row[1].'</option>';
+
+						$i++;
+					}
+					print "</select>";
+				}
+				else
+				{
+					print "<i>".$langs->trans("NoActiveBankAccountDefined")."</i>";
+				}
+			}
+		}
+		else
+		{
+			print $langs->trans("BankModuleNotActive");
+		}
+		print '</table>';
+                    //print '<a class="butAction" href="banque.php?facid='.$object->id.'&amp;action=create">'.$langs->trans('PaymentMode').'</a>';
+	}
 }
 
 dol_htmloutput_mesg('',$mesgs);
