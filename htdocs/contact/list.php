@@ -341,6 +341,8 @@ if ($result)
 
         $var=!$var;
 
+		if ($obj->statut == 0)
+		{
         print "<tr $bc[$var]>";
         
         
@@ -408,6 +410,7 @@ if ($result)
 			print '</a></td>';
 
 			print "</tr>\n";
+		}
 		
         $i++;
     }
