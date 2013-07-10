@@ -555,10 +555,10 @@ function show_contacts($conf,$langs,$db,$object,$backtopage='')
         while ($i < $num)
         {
             $obj = $db->fetch_object($result);
-            $var = !$var;
-			
+           
 			if($obj->statut == 0)
 			{
+				 $var = !$var;
 				print "<tr ".$bc[$var].">";
 				print '<td>';
 				$contactstatic->id = $obj->rowid;
