@@ -46,6 +46,7 @@ $search_phonemob=GETPOST("search_phonemob");
 $search_fax=GETPOST("search_fax");
 $search_email=GETPOST("search_email");
 $search_priv=GETPOST("search_priv");
+$search_statut=GETPOST("search_statut");
 
 $type=GETPOST("type");
 $view=GETPOST("view");
@@ -119,7 +120,7 @@ llxHeader('',$title,'EN:Module_Third_Parties|FR:Module_Tiers|ES:M&oacute;dulo_Em
 $form=new Form($db);
 
 $sql = "SELECT s.rowid as socid, s.nom as name,";
-$sql.= " p.rowid as cidp, p.name as lastname, p.firstname, p.poste, p.email,";
+$sql.= " p.rowid as cidp, p.name as lastname,p.statut, p.firstname, p.poste, p.email,";
 $sql.= " p.phone, p.phone_mobile, p.fax, p.fk_pays, p.priv, p.tms,";
 $sql.= " cp.code as pays_code";
 $sql.= " FROM ".MAIN_DB_PREFIX."socpeople as p";
@@ -278,6 +279,7 @@ if ($result)
     }
     print_liste_field_titre($langs->trans("DateModificationShort"),$_SERVER["PHP_SELF"],"p.tms", $begin, $param, 'align="center"', $sortfield,$sortorder);
     print_liste_field_titre($langs->trans("ContactVisibility"),$_SERVER["PHP_SELF"],"p.priv", $begin, $param, 'align="center"', $sortfield,$sortorder);
+    
     print '<td class="liste_titre">&nbsp;</td>';
     print "</tr>\n";
 
@@ -335,73 +337,79 @@ if ($result)
     while ($i < min($num,$limit))
     {
         $obj = $db->fetch_object($result);
+        
 
         $var=!$var;
 
         print "<tr $bc[$var]>";
-
-		// Name
-		print '<td valign="middle">';
-		$contactstatic->lastname=$obj->lastname;
-		$contactstatic->firstname='';
-		$contactstatic->id=$obj->cidp;
-		print $contactstatic->getNomUrl(1,'',20);
-		print '</td>';
-
-		// Firstname
-        print '<td>'.dol_trunc($obj->firstname,20).'</td>';
-
-		// Function
-        print '<td>'.dol_trunc($obj->poste,20).'</td>';
-
-        // Company
-        if (empty($conf->global->SOCIETE_DISABLE_CONTACTS))
+        
+        if ($obj->statut == 0)
         {
-    		print '<td>';
-            if ($obj->socid)
-            {
-                print '<a href="'.DOL_URL_ROOT.'/comm/fiche.php?socid='.$obj->socid.'">';
-                print img_object($langs->trans("ShowCompany"),"company").' '.dol_trunc($obj->name,20).'</a>';
-            }
-            else
-            {
-                print '&nbsp;';
-            }
-            print '</td>';
-        }
 
-        if ($view == 'phone')
-        {
-            // Phone
-            print '<td>'.dol_print_phone($obj->phone,$obj->pays_code,$obj->cidp,$obj->socid,'AC_TEL').'</td>';
-            // Phone mobile
-            print '<td>'.dol_print_phone($obj->phone_mobile,$obj->pays_code,$obj->cidp,$obj->socid,'AC_TEL').'</td>';
-            // Fax
-            print '<td>'.dol_print_phone($obj->fax,$obj->pays_code,$obj->cidp,$obj->socid,'AC_TEL').'</td>';
-        }
-        else
-        {
-            // Phone
-            print '<td>'.dol_print_phone($obj->phone,$obj->pays_code,$obj->cidp,$obj->socid,'AC_TEL').'</td>';
-            // EMail
-            print '<td>'.dol_print_email($obj->email,$obj->cidp,$obj->socid,'AC_EMAIL',18).'</td>';
-        }
+			// Name
+			print '<td valign="middle">';
+			$contactstatic->lastname=$obj->lastname;
+			$contactstatic->firstname='';
+			$contactstatic->id=$obj->cidp;
+			print $contactstatic->getNomUrl(1,'',20);
+			print '</td>';
 
-		// Date
-		print '<td align="center">'.dol_print_date($db->jdate($obj->tms),"day").'</td>';
+			// Firstname
+			print '<td>'.dol_trunc($obj->firstname,20).'</td>';
 
-		// Private/Public
-		print '<td align="center">'.$contactstatic->LibPubPriv($obj->priv).'</td>';
+			// Function
+			print '<td>'.dol_trunc($obj->poste,20).'</td>';
 
-		// Links Add action and Export vcard
-        print '<td align="right">';
-        print '<a href="'.DOL_URL_ROOT.'/comm/action/fiche.php?action=create&amp;backtopage=1&amp;contactid='.$obj->cidp.'&amp;socid='.$obj->socid.'">'.img_object($langs->trans("AddAction"),"action").'</a>';
-        print ' &nbsp; ';
-        print '<a href="'.DOL_URL_ROOT.'/contact/vcard.php?id='.$obj->cidp.'">';
-        print img_picto($langs->trans("VCard"),'vcard.png').' ';
-        print '</a></td>';
+			// Company
+			if (empty($conf->global->SOCIETE_DISABLE_CONTACTS))
+			{
+				print '<td>';
+				if ($obj->socid)
+				{
+					print '<a href="'.DOL_URL_ROOT.'/comm/fiche.php?socid='.$obj->socid.'">';
+					print img_object($langs->trans("ShowCompany"),"company").' '.dol_trunc($obj->name,20).'</a>';
+				}
+				else
+				{
+					print '&nbsp;';
+				}
+				print '</td>';
+			}
 
-        print "</tr>\n";
+			if ($view == 'phone')
+			{
+				// Phone
+				print '<td>'.dol_print_phone($obj->phone,$obj->pays_code,$obj->cidp,$obj->socid,'AC_TEL').'</td>';
+				// Phone mobile
+				print '<td>'.dol_print_phone($obj->phone_mobile,$obj->pays_code,$obj->cidp,$obj->socid,'AC_TEL').'</td>';
+				// Fax
+				print '<td>'.dol_print_phone($obj->fax,$obj->pays_code,$obj->cidp,$obj->socid,'AC_TEL').'</td>';
+			}
+			else
+			{
+				// Phone
+				print '<td>'.dol_print_phone($obj->phone,$obj->pays_code,$obj->cidp,$obj->socid,'AC_TEL').'</td>';
+				// EMail
+				print '<td>'.dol_print_email($obj->email,$obj->cidp,$obj->socid,'AC_EMAIL',18).'</td>';
+			}
+
+			// Date
+			print '<td align="center">'.dol_print_date($db->jdate($obj->tms),"day").'</td>';
+
+			// Private/Public
+			print '<td align="center">'.$contactstatic->LibPubPriv($obj->priv).'</td>';
+			
+			
+			// Links Add action and Export vcard
+			print '<td align="right">';
+			print '<a href="'.DOL_URL_ROOT.'/comm/action/fiche.php?action=create&amp;backtopage=1&amp;contactid='.$obj->cidp.'&amp;socid='.$obj->socid.'">'.img_object($langs->trans("AddAction"),"action").'</a>';
+			print ' &nbsp; ';
+			print '<a href="'.DOL_URL_ROOT.'/contact/vcard.php?id='.$obj->cidp.'">';
+			print img_picto($langs->trans("VCard"),'vcard.png').' ';
+			print '</a></td>';
+
+			print "</tr>\n";
+		}
         $i++;
     }
 

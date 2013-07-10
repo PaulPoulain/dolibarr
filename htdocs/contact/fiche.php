@@ -30,9 +30,12 @@ require_once DOL_DOCUMENT_ROOT.'/comm/action/class/actioncomm.class.php';
 require_once DOL_DOCUMENT_ROOT.'/contact/class/contact.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/contact.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/company.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/images.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formcompany.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
+require_once DOL_DOCUMENT_ROOT. '/core/class/html.form.class.php';
 
+require_once DOL_DOCUMENT_ROOT.'/user/class/user.class.php';
 $langs->load("companies");
 $langs->load("users");
 $langs->load("other");
@@ -125,7 +128,30 @@ if (empty($reshook))
             $error=$object->error; $errors=$object->errors;
         }
     }
+	
 
+        /*
+         * Confirmation desactivation
+         */
+        if ($action == 'disable')
+        {
+            $object->fetch($id);
+			$object->setstatus(1);
+			header("Location: ".$_SERVER['PHP_SELF'].'?id='.$id);
+			exit;
+        }
+
+        /*
+         * Confirmation activation
+         */
+        if ($action == 'enable')
+        {
+			$object->fetch($id);
+			$object->setstatus(0);
+			header("Location: ".$_SERVER['PHP_SELF'].'?id='.$id);
+			exit;
+			
+        }
     // Add contact
     if ($action == 'add' && $user->rights->societe->contact->creer)
     {
@@ -731,6 +757,12 @@ else
             print '<textarea name="note" cols="70" rows="'.ROWS_3.'">';
             print isset($_POST["note"])?$_POST["note"]:$object->note;
             print '</textarea></td></tr>';
+            
+            // Statut
+            print '<tr><td valign="top">'.$langs->trans("Status").'</td>';
+            print '<td>';
+            print $object->getLibStatut();
+            print '</td></tr>';
 
             // Other attributes
             $parameters=array('colspan' => ' colspan="3"');
@@ -943,7 +975,13 @@ else
         print '<tr><td valign="top">'.$langs->trans("Note").'</td><td colspan="3">';
         print nl2br($object->note);
         print '</td></tr>';
-
+		
+	 // Statut
+		print '<tr><td valign="top">'.$langs->trans("Status").'</td>';
+		print '<td>';
+		print $object->getLibStatut();
+		print '</td>';
+		print '</tr>'."\n";
         // Other attributes
         $parameters=array('socid'=>$socid, 'colspan' => ' colspan="3"');
         $reshook=$hookmanager->executeHooks('formObjectOptions',$parameters,$object,$action);    // Note that $action and $object may have been modified by hook
@@ -1020,6 +1058,16 @@ else
             if ($user->rights->societe->contact->supprimer)
             {
                 print '<a class="butActionDelete" href="fiche.php?id='.$object->id.'&amp;action=delete">'.$langs->trans('Delete').'</a>';
+            }
+            // Activer
+            if ($object->statut == 1 && $user->rights->societe->contact->creer)
+            {
+                print '<a class="butAction" href="'.$_SERVER['PHP_SELF'].'?id='.$object->id.'&amp;action=enable">'.$langs->trans("Reactivate").'</a>';
+            }
+            // Desactiver
+            if ($object->statut == 0 && $user->rights->societe->contact->creer)
+            {
+                print '<a class="butActionDelete" href="'.$_SERVER['PHP_SELF'].'?action=disable&amp;id='.$object->id.'">'.$langs->trans("DisableUser").'</a>';
             }
 
             print "</div><br>";

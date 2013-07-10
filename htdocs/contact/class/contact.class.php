@@ -65,7 +65,7 @@ class Contact extends CommonObject
 	var $country;				// Label of country
 
 	var $socid;					// fk_soc
-	var $status;				// 0=brouillon, 1=4=actif, 5=inactif
+	var $statut;				// 0=brouillon, 1=4=actif, 5=inactif
 
 	var $code;
 	var $email;
@@ -487,7 +487,7 @@ class Contact extends CommonObject
 		$langs->load("companies");
 
 		$sql = "SELECT c.rowid, c.fk_soc, c.civilite as civilite_id, c.name as lastname, c.firstname,";
-		$sql.= " c.address, c.cp as zip, c.ville as town,";
+		$sql.= " c.address,c.statut, c.cp as zip, c.ville as town,";
 		$sql.= " c.fk_pays as country_id,";
 		$sql.= " c.fk_departement,";
 		$sql.= " c.birthday,";
@@ -546,6 +546,7 @@ class Contact extends CommonObject
 				$this->socid			= $obj->fk_soc;
 				$this->socname			= $obj->socname;
 				$this->poste			= $obj->poste;
+				$this->statut			= $obj->statut;
 
 				$this->phone_pro		= trim($obj->phone);
 				$this->fax				= trim($obj->fax);
@@ -943,7 +944,7 @@ class Contact extends CommonObject
 	 */
 	function getLibStatut($mode)
 	{
-		return $this->LibStatut($this->status,$mode);
+		return $this->LibStatut($this->statut,$mode);
 	}
 
 	/**
@@ -953,52 +954,14 @@ class Contact extends CommonObject
 	 *  @param      int			$mode       0=libelle long, 1=libelle court, 2=Picto + Libelle court, 3=Picto, 4=Picto + Libelle long, 5=Libelle court + Picto
 	 *  @return     string					Libelle
 	 */
-	function LibStatut($statut, $mode)
+	function LibStatut($statut)
 	{
 		global $langs;
-
-		if ($mode == 0)
-		{
-			if ($statut==0) return $langs->trans('StatusContactDraft');
-			elseif ($statut==1) return $langs->trans('StatusContactValidated');
-			elseif ($statut==4) return $langs->trans('StatusContactValidated');
-			elseif ($statut==5) return $langs->trans('StatusContactValidated');
-		}
-		elseif ($mode == 1)
-		{
-			if ($statut==0) return $langs->trans('StatusContactDraftShort');
-			elseif ($statut==1) return $langs->trans('StatusContactValidatedShort');
-			elseif ($statut==4) return $langs->trans('StatusContactValidatedShort');
-			elseif ($statut==5) return $langs->trans('StatusContactValidatedShort');
-		}
-		elseif ($mode == 2)
-		{
-			if ($statut==0) return img_picto($langs->trans('StatusContactDraftShort'),'statut0').' '.$langs->trans('StatusContactDraft');
-			elseif ($statut==1) return img_picto($langs->trans('StatusContactValidatedShort'),'statut1').' '.$langs->trans('StatusContactValidated');
-			elseif ($statut==4) return img_picto($langs->trans('StatusContactValidatedShort'),'statut4').' '.$langs->trans('StatusContactValidated');
-			elseif ($statut==5) return img_picto($langs->trans('StatusContactValidatedShort'),'statut5').' '.$langs->trans('StatusContactValidated');
-		}
-		elseif ($mode == 3)
-		{
-			if ($statut==0) return img_picto($langs->trans('StatusContactDraft'),'statut0');
-			elseif ($statut==1) return img_picto($langs->trans('StatusContactValidated'),'statut1');
-			elseif ($statut==4) return img_picto($langs->trans('StatusContactValidated'),'statut4');
-			elseif ($statut==5) return img_picto($langs->trans('StatusContactValidated'),'statut5');
-		}
-		elseif ($mode == 4)
-		{
-			if ($statut==0) return img_picto($langs->trans('StatusContactDraft'),'statut0').' '.$langs->trans('StatusContactDraft');
-			elseif ($statut==1) return img_picto($langs->trans('StatusContactValidated'),'statut1').' '.$langs->trans('StatusContactValidated');
-			elseif ($statut==4) return img_picto($langs->trans('StatusContactValidated'),'statut4').' '.$langs->trans('StatusContactValidated');
-			elseif ($statut==5) return img_picto($langs->trans('StatusContactValidated'),'statut5').' '.$langs->trans('StatusContactValidated');
-		}
-		elseif ($mode == 5)
-		{
-			if ($statut==0) return $langs->trans('StatusContactDraftShort').' '.img_picto($langs->trans('StatusContactDraftShort'),'statut0');
-			elseif ($statut==1) return $langs->trans('StatusContactValidatedShort').' '.img_picto($langs->trans('StatusContactValidatedShort'),'statut1');
-			elseif ($statut==4) return $langs->trans('StatusContactValidatedShort').' '.img_picto($langs->trans('StatusContactValidatedShort'),'statut4');
-			elseif ($statut==5) return $langs->trans('StatusContactValidatedShort').' '.img_picto($langs->trans('StatusContactValidatedShort'),'statut5');
-		}
+		
+			if ($statut==1) return img_picto($langs->trans('StatusContactDraft'),'statut0').' '.$langs->trans('Disabled');
+			elseif ($statut==0) return img_picto($langs->trans('StatusContactValidated'),'statut1').' '.$langs->trans('Enabled');
+			
+		
 	}
 
 
@@ -1058,7 +1021,57 @@ class Contact extends CommonObject
 		$this->email = 'specimen@specimen.com';
 		$socid = rand(1, $num_socs);
 		$this->socid = $socids[$socid];
+		$this->statut=1;
 	}
+	
+	/**
+	 *  Change status of a user
+	 *
+	 *	@param	int		$statut		Status to set
+	 *  @return int     			<0 if KO, 0 if nothing is done, >0 if OK
+	 */
+	function setstatus($statut)
+	{
+		global $conf,$langs,$user;
+
+		$error=0;
+
+		// Check parameters
+		if ($this->statut == $statut) return 0;
+		else $this->statut = $statut;
+
+		$this->db->begin();
+
+		// Desactive utilisateur
+		$sql = "UPDATE ".MAIN_DB_PREFIX."socpeople";
+		$sql.= " SET statut = ".$this->statut;
+		$sql.= " WHERE rowid = ".$this->id;
+		$result = $this->db->query($sql);
+
+		dol_syslog(get_class($this)."::setstatus sql=".$sql);
+		if ($result)
+		{
+			// Appel des triggers
+			include_once DOL_DOCUMENT_ROOT . '/core/class/interfaces.class.php';
+			$interface=new Interfaces($this->db);
+			$result=$interface->run_triggers('USER_ENABLEDISABLE',$this,$user,$langs,$conf);
+			if ($result < 0) { $error++; $this->errors=$interface->errors; }
+			// Fin appel triggers
+		}
+
+		if ($error)
+		{
+			$this->db->rollback();
+			return -$error;
+		}
+		else
+		{
+			$this->db->commit();
+			return 1;
+		}
+	}
+
+
 
 }
 ?>
