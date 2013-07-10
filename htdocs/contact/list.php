@@ -343,8 +343,7 @@ if ($result)
 
         print "<tr $bc[$var]>";
         
-        if ($obj->statut == 0)
-        {
+        
 
 			// Name
 			print '<td valign="middle">';
@@ -409,7 +408,7 @@ if ($result)
 			print '</a></td>';
 
 			print "</tr>\n";
-		}
+		
         $i++;
     }
 

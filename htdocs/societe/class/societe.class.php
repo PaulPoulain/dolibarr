@@ -1612,7 +1612,7 @@ class Societe extends CommonObject
     {
         $contact_property = array();
 
-        $sql = "SELECT rowid, email, phone_mobile, name, firstname";
+        $sql = "SELECT rowid, email,statut, phone_mobile, name, firstname";
         $sql.= " FROM ".MAIN_DB_PREFIX."socpeople";
         $sql.= " WHERE fk_soc = '".$this->id."'";
 
@@ -1628,7 +1628,10 @@ class Societe extends CommonObject
                     $obj = $this->db->fetch_object($resql);
                     if ($mode == 'email') $property=$obj->email;
                     else if ($mode == 'mobile') $property=$obj->phone_mobile;
-                    $contact_property[$obj->rowid] = trim($obj->firstname." ".$obj->name)." &lt;".$property."&gt;";
+                    if ($obj->statut == 0)
+                    {
+						$contact_property[$obj->rowid] = trim($obj->firstname." ".$obj->name)." &lt;".$property."&gt;";
+					}
                     $i++;
                 }
             }
