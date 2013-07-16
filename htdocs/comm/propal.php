@@ -1707,7 +1707,7 @@ if ($action != 'presend')
 		//Creer un evenement
 		 if ($conf->agenda->enabled)
 		{
-			print '<a class="butAction" href="'.DOL_URL_ROOT.'/comm/action/fiche.php?action=create&socid='.$object->socid.'">'.$langs->trans("AddAction").'</a>';
+			print '<a class="butAction" href="'.DOL_URL_ROOT.'/comm/action/fiche.php?action=create&amp;origin='.$object->element.'&amp;originid='.$object->id.'&amp;socid='.$object->socid.'">'.$langs->trans("AddAction").'</a>';
 			
 		}
 		// Validate

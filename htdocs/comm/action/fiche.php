@@ -48,6 +48,8 @@ $action=GETPOST('action','alpha');
 $cancel=GETPOST('cancel','alpha');
 $backtopage=GETPOST('backtopage','alpha');
 $contactid=GETPOST('contactid','int');
+$origin=GETPOST('origin','alpha');
+$originid=GETPOST('originid','int');
 
 // Security check
 $socid = GETPOST('socid','int');
@@ -136,6 +138,8 @@ if ($action == 'add_action')
 	$actioncomm->fulldayevent = (! empty($fulldayevent)?1:0);
 	$actioncomm->location = GETPOST("location");
 	$actioncomm->label = trim(GETPOST('label'));
+	$actioncomm->fk_element = GETPOST("fk_element");
+	$actioncomm->elementtype = GETPOST("elementtype");
 	if (! GETPOST('label'))
 	{
 		if (GETPOST('actioncode') == 'AC_RDV' && $contact->getFullName($langs))
@@ -324,7 +328,8 @@ if ($action == 'update')
 		$actioncomm->fk_project  = $_POST["projectid"];
 		$actioncomm->note        = $_POST["note"];
 		$actioncomm->pnote       = $_POST["note"];
-
+		$actioncomm->fk_element	 = $_POST["fk_element"];
+		$actioncomm->elementtype = $_POST["elementtype"];
 		if (! $datef && $percentage == 100)
 		{
 			$error=$langs->trans("ErrorFieldRequired",$langs->trans("DateEnd"));
@@ -478,7 +483,7 @@ if ($action == 'create')
 
     // Full day
     print '<tr><td class="fieldrequired">'.$langs->trans("EventOnFullDay").'</td><td><input type="checkbox" id="fullday" name="fullday" '.(GETPOST('fullday')?' checked="checked"':'').'></td></tr>';
-
+	
 	// Date start
 	$datep=$actioncomm->datep;
 	if (GETPOST('datep','int',1)) $datep=dol_stringtotime(GETPOST('datep','int',1),0);
@@ -579,6 +584,11 @@ if ($action == 'create')
 		}
 		print '</td></tr>';
 	}
+	if(!empty($origin) && !empty($originid))
+	{
+		print '<td>'.$langs->trans("origin_id").'</td><td><input type="text" name="fk_element" size="10" value="'.GETPOST('originid').'"></td></tr>';
+		print '<td>'.$langs->trans("origin").'</td><td><input type="text" name="elementtype" size="10" value="'.GETPOST('origin').'"></td></tr>';
+	}
 
 	if (GETPOST("datep") && preg_match('/^([0-9][0-9][0-9][0-9])([0-9][0-9])([0-9][0-9])$/',GETPOST("datep"),$reg))
 	{
@@ -598,6 +608,7 @@ if ($action == 'create')
     $doleditor=new DolEditor('note',(GETPOST('note')?GETPOST('note'):$actioncomm->note),'',280,'dolibarr_notes','In',true,true,$conf->fckeditor->enabled,ROWS_7,90);
     $doleditor->Create();
     print '</td></tr>';
+    
 
     // Other attributes
     $parameters=array();

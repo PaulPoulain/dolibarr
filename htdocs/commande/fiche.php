@@ -2191,6 +2191,12 @@ if ($action == 'send' && ! GETPOST('addfile') && ! GETPOST('removedfile') && ! G
 				{
 					print '<div class="tabsAction">';
 
+					//Creer un evenement
+					 if ($conf->agenda->enabled)
+					{
+						print '<a class="butAction" href="'.DOL_URL_ROOT.'/comm/action/fiche.php?action=create&amp;origin='.$object->element.'&amp;originid='.$object->id.'&amp;socid='.$object->socid.'">'.$langs->trans("AddAction").'</a>';
+						
+					}
 					// Valid
 					if ($object->statut == 0 && $object->total_ttc >= 0 && $numlines > 0 && $user->rights->commande->valider)
 					{
