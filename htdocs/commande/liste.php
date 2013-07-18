@@ -48,6 +48,7 @@ $sall=GETPOST('sall');
 $socid=GETPOST('socid','int');
 $search_user=GETPOST('search_user','int');
 $search_sale=GETPOST('search_sale','int');
+$note=GETPOST('note','alpha');
 
 // Security check
 $id = (GETPOST('orderid')?GETPOST('orderid'):GETPOST('id','int'));
@@ -110,7 +111,7 @@ $companystatic = new Societe($db);
 $help_url="EN:Module_Customers_Orders|FR:Module_Commandes_Clients|ES:Módulo_Pedidos_de_clientes";
 llxHeader('',$langs->trans("Orders"),$help_url);
 
-$sql = 'SELECT s.nom, s.rowid as socid, s.client, c.rowid, c.ref, c.total_ht, c.ref_client,';
+$sql = 'SELECT s.nom, s.rowid as socid, s.client, c.rowid,c.note_private, c.ref, c.total_ht, c.ref_client,';
 $sql.= ' c.date_valid, c.date_commande, c.date_livraison, c.fk_statut, c.facture as facturee';
 $sql.= ' FROM '.MAIN_DB_PREFIX.'societe as s';
 $sql.= ', '.MAIN_DB_PREFIX.'commande as c';
@@ -193,6 +194,10 @@ if (!empty($sref_client))
 {
 	$sql.= ' AND c.ref_client LIKE \'%'.$db->escape($sref_client).'%\'';
 }
+if (!empty($note))
+{
+	$sql.= 'AND c.note_private LIKE \'%'.$db->escape($note).'%\'';
+}
 if ($search_sale > 0) $sql.= " AND s.rowid = sc.fk_soc AND sc.fk_user = " .$search_sale;
 if ($search_user > 0)
 {
@@ -243,6 +248,7 @@ if ($resql)
 	if ($sref_client)     $param.='&sref_client='.$sref_client;
 	if ($search_user > 0) $param.='&search_user='.$search_user;
 	if ($search_sale > 0) $param.='&search_sale='.$search_sale;
+	if ($note)			  $param.='&note='.$note;
 
 	$num = $db->num_rows($resql);
 	print_barre_liste($title, $page,$_SERVER["PHP_SELF"],$param,$sortfield,$sortorder,'',$num);
@@ -282,6 +288,7 @@ if ($resql)
 	print_liste_field_titre($langs->trans('Ref'),$_SERVER["PHP_SELF"],'c.ref','',$param,'width="25%"',$sortfield,$sortorder);
 	print_liste_field_titre($langs->trans('Company'),$_SERVER["PHP_SELF"],'s.nom','',$param,'',$sortfield,$sortorder);
 	print_liste_field_titre($langs->trans('RefCustomerOrder'),$_SERVER["PHP_SELF"],'c.ref_client','',$param,'',$sortfield,$sortorder);
+	print_liste_field_titre($langs->trans('Note'),$_SERVER["PHP_SELF"],'c.note_private','',$param,'',$sortfield,$sortorder);
 	print_liste_field_titre($langs->trans('OrderDate'),$_SERVER["PHP_SELF"],'c.date_commande','',$param, 'align="right"',$sortfield,$sortorder);
 	print_liste_field_titre($langs->trans('DeliveryDate'),$_SERVER["PHP_SELF"],'c.date_livraison','',$param, 'align="right"',$sortfield,$sortorder);
 	print_liste_field_titre($langs->trans('AmountHT'),$_SERVER["PHP_SELF"],'c.total_ht','',$param, 'align="right"',$sortfield,$sortorder);
@@ -296,7 +303,7 @@ if ($resql)
 	print '<input class="flat" type="text" size="10" name="sref_client" value="'.$sref_client.'">';
 	print '</td><td class="liste_titre">&nbsp;';
 	print '</td><td class="liste_titre">&nbsp;';
-	print '</td><td class="liste_titre">&nbsp;';
+	print '</td><td align="right" class="liste_titre" colspan="2">';
 	print '</td><td align="right" class="liste_titre">';
 	print '<input type="image" class="liste_titre" name="button_search" src="'.DOL_URL_ROOT.'/theme/'.$conf->theme.'/img/search.png"  value="'.dol_escape_htmltag($langs->trans("Search")).'" title="'.dol_escape_htmltag($langs->trans("Search")).'">';
 	print '</td></tr>';
@@ -357,6 +364,12 @@ if ($resql)
 		print '</td>';
 
 		print '<td>'.$objp->ref_client.'</td>';
+		
+		
+		print '<td class="nobordernopadding">';
+		print $objp->note_private;
+		print '<a href="'.DOL_URL_ROOT.'/commande/note.php?action=editnote&id='.$objp->rowid.'">'.img_edit($langs->trans("Editnote")).'</a>';
+		print '</td>';
 
 		// Order date
 		$y = dol_print_date($db->jdate($objp->date_commande),'%Y');
