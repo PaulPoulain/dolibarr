@@ -89,8 +89,7 @@ $extralabels=$extrafields->fetch_name_optionals_label($object->table_element);
 if ($id > 0 || ! empty($ref))
 {
 	$ret=$object->fetch($id, $ref);
-	if ($ret > 0) $ret=$object->fetch_thirdparty();
-	if ($ret < 0) dol_print_error('',$object->error);
+	$ret=$object->fetch_thirdparty();
 }
 
 // Initialize technical object to manage hooks of thirdparties. Note that conf->hooks_modules contains array array
