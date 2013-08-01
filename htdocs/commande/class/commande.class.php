@@ -58,6 +58,7 @@ class Commande extends CommonOrder
 
     var $facturee;		// Facturee ou non
     var $brouillon;
+    var $reste_facture_ht;
     var $cond_reglement_id;
     var $cond_reglement_code;
     var $mode_reglement_id;
@@ -1274,7 +1275,7 @@ class Commande extends CommonOrder
         // Check parameters
         if (empty($id) && empty($ref) && empty($ref_ext) && empty($ref_int)) return -1;
 
-        $sql = 'SELECT c.rowid, c.date_creation, c.ref, c.fk_soc, c.fk_user_author, c.fk_statut';
+        $sql = 'SELECT c.rowid, c.date_creation, c.ref, c.fk_soc, c.fk_user_author, c.fk_statut, c.reste_facture_ht';
         $sql.= ', c.amount_ht, c.total_ht, c.total_ttc, c.tva as total_tva, c.localtax1 as total_localtax1, c.localtax2 as total_localtax2, c.fk_cond_reglement, c.fk_mode_reglement, c.fk_availability, c.fk_input_reason';
         $sql.= ', c.date_commande';
         $sql.= ', c.date_livraison';
@@ -1309,6 +1310,7 @@ class Commande extends CommonOrder
                 $this->ref_int				= $obj->ref_int;
                 $this->socid				= $obj->fk_soc;
                 $this->statut				= $obj->fk_statut;
+                $this->reste_facture_ht		= $obj->reste_facture_ht;
                 $this->user_author_id		= $obj->fk_user_author;
                 $this->total_ht				= $obj->total_ht;
                 $this->total_tva			= $obj->total_tva;
@@ -1854,6 +1856,29 @@ class Commande extends CommonOrder
             }
         }
     }
+    
+    function set_reste_facture($reste_facture_ht)
+    {
+			$reste_facture_ht=price2num($reste_facture_ht);
+			$sql = 'UPDATE '.MAIN_DB_PREFIX.'commande';
+            $sql.= ' SET reste_facture_ht = '.$reste_facture_ht;
+            $sql.= ' WHERE rowid = '.$this->id;
+
+            dol_syslog(get_class($this)."::set_reste_facture_ht sql=$sql");
+
+            if ($this->db->query($sql))
+            {
+                $this->reste_facture_ht = $reste_facture_ht;
+                return 1;
+            }
+            else
+            {
+                $this->error=$this->db->error();
+                return -1;
+            }
+       
+    }
+    
 
 
     /**
@@ -1890,6 +1915,7 @@ class Commande extends CommonOrder
             return -2;
         }
     }
+   
 
     /**
      *	Set the planned delivery date

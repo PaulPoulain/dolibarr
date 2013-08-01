@@ -2527,6 +2527,37 @@ else
 			print '</div><div class="fichehalfright"><div class="ficheaddleft">';
 			//print '</td><td valign="top" width="50%">';
 
+			$somethingshown=$object->showLinkedObject();
+			$linkedObject = $GLOBALS['linkedObject'];
+			$total_facture=0;
+			if(!empty($linkedObject))
+			{
+				foreach($linkedObject as $obj)
+				{
+					
+						$total_facture = $total_facture + $obj->total_ht;
+						
+					
+				}
+			
+				$valeur=$object->total_ht-$total_facture;
+				if ($valeur < 0)
+				{
+					$result=$object->set_reste_facture(0);
+				}
+				else
+				{
+					$result=$object->set_reste_facture($valeur);
+				}
+				if ($result < 0)
+				{
+					$mesg='<div class="error">'.$object->error.'</div>';
+				}
+			}
+			else
+			{
+				$result=$object->set_reste_facture($object->total_ht);
+			}
 			// List of actions on element
 			include_once DOL_DOCUMENT_ROOT.'/core/class/html.formactions.class.php';
 			$formactions=new FormActions($db);

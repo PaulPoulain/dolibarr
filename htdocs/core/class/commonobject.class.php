@@ -2586,7 +2586,7 @@ abstract class CommonObject
     function showLinkedObject($hookmanager=false)
     {
         global $conf,$langs,$bc,$linkedObject;
-        $linkedObject=0;
+        
 
         $this->fetchObjectLinked();
 

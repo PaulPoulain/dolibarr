@@ -49,6 +49,7 @@ $socid=GETPOST('socid','int');
 $search_user=GETPOST('search_user','int');
 $search_sale=GETPOST('search_sale','int');
 $search_montant_ht=GETPOST('search_montant_ht','alpha');
+$search_reste_ht=GETPOST('search_reste_ht','alpha');
 
 // Security check
 $id = (GETPOST('orderid')?GETPOST('orderid'):GETPOST('id','int'));
@@ -93,6 +94,7 @@ if (GETPOST("button_removefilter_x"))
     $ordermonth='';
     $deliverymonth='';
     $deliveryyear='';
+    $search_reste_ht='';
 }
 
 
@@ -112,7 +114,7 @@ $help_url="EN:Module_Customers_Orders|FR:Module_Commandes_Clients|ES:Módulo_Ped
 llxHeader('',$langs->trans("Orders"),$help_url);
 
 $sql = 'SELECT s.nom, s.rowid as socid, s.client, c.rowid, c.ref, c.total_ht, c.ref_client,';
-$sql.= ' c.date_valid, c.date_commande, c.date_livraison, c.fk_statut, c.facture as facturee,c.total_ht';
+$sql.= ' c.date_valid, c.date_commande, c.date_livraison, c.reste_facture_ht, c.fk_statut, c.facture as facturee,c.total_ht';
 $sql.= ' FROM '.MAIN_DB_PREFIX.'societe as s';
 $sql.= ', '.MAIN_DB_PREFIX.'commande as c';
 // We'll need this table joined to the select in order to filter by sale
@@ -199,11 +201,15 @@ if ($search_user > 0)
 {
     $sql.= " AND ec.fk_c_type_contact = tc.rowid AND tc.element='commande' AND tc.source='internal' AND ec.element_id = c.rowid AND ec.fk_socpeople = ".$search_user;
 }
-
 if ($search_montant_ht)
 {
 	$sql.= " AND c.total_ht='".$db->escape(price2num(trim($search_montant_ht)))."'";
 }
+if ($search_reste_ht)
+{
+	$sql.= " AND c.reste_facture_ht='".$db->escape(price2num(trim($search_reste_ht)))."'";
+}
+
 
 $sql.= ' ORDER BY '.$sortfield.' '.$sortorder;
 $sql.= $db->plimit($limit + 1,$offset);
@@ -250,6 +256,7 @@ if ($resql)
 	if ($sref_client)     $param.='&sref_client='.$sref_client;
 	if ($search_user > 0) $param.='&search_user='.$search_user;
 	if ($search_sale > 0) $param.='&search_sale='.$search_sale;
+	if ($search_reste_ht)	$param.='&search_reste_ht='.$search_reste_ht;
 
 	$num = $db->num_rows($resql);
 	print_barre_liste($title, $page,$_SERVER["PHP_SELF"],$param,$sortfield,$sortorder,'',$num);
@@ -292,7 +299,7 @@ if ($resql)
 	print_liste_field_titre($langs->trans('OrderDate'),$_SERVER["PHP_SELF"],'c.date_commande','',$param, 'align="right"',$sortfield,$sortorder);
 	print_liste_field_titre($langs->trans('DeliveryDate'),$_SERVER["PHP_SELF"],'c.date_livraison','',$param, 'align="right"',$sortfield,$sortorder);
 	print_liste_field_titre($langs->trans('AmountHT'),$_SERVER["PHP_SELF"],'c.total_ht','',$param, 'align="right"',$sortfield,$sortorder);
-	print_liste_field_titre ($langs->trans('A facturer'));
+	print_liste_field_titre($langs->trans('A facturer'),$_SERVER["PHP_SELF"],'c.reste_facture_ht','',$param, 'align="right"',$sortfield,$sortorder);
 	print_liste_field_titre($langs->trans('Status'),$_SERVER["PHP_SELF"],'c.fk_statut','',$param,'align="right"',$sortfield,$sortorder);
 	print '<td colspan="2">';
 	print '<td/>';
@@ -395,25 +402,9 @@ if ($resql)
 		
 		print '<td align="right" class="nowrap">'.price($objp->total_ht).'</td>';
 		
-		//facture
-		
-		$total_facture=0;
-		$somethingshown=$generic_commande->showLinkedObject();
-		$linkedObject = $GLOBALS['linkedObject'];
-		
-			foreach($linkedObject as $obj)
-			{
-				
-					$total_facture = $total_facture + $obj->total_ht;
-				
-			}
-			$obj->total_ht=0;
-		
-	
 		//Reste a facturer
-		$reste_facture=$objp->total_ht - $total_facture;
 		
-		print '<td align="right">'.price($reste_facture)."</td>\n";
+		print '<td align="right">'.price($objp->reste_facture_ht)."</td>\n";
 
 		// Statut
 		print '<td align="right" nowrap="nowrap">'.$generic_commande->LibStatut($objp->fk_statut,$objp->facturee,5).'</td>';
@@ -423,8 +414,7 @@ if ($resql)
 		print '</td></tr>';
 
 		$total+=$objp->total_ht;
-		$subtotal+=$total_facture;
-		$reste+=$reste_facture;
+		$total_reste+=$objp->reste_facture_ht;
 		$i++;
 	}
 	if($num >= $limit)
@@ -433,7 +423,7 @@ if ($resql)
 		print '<tr class="liste_total">';
 		print '<td colspan="5" align="left">'.$langs->trans("Total for this page").'</td>';
 		print '<td align="right" class="nowrap"><b>'.price($total).'</b></td>';
-		print '<td align="right" class="nowrap"><b>'.price($reste).'</b></td>';
+		print '<td align="right" class="nowrap"><b>'.price($total_reste).'</b></td>';
 		print '<td class="nowrap">&nbsp;</td>';
 		print '<td colspan="3">';
 		print '</td></tr>';
@@ -443,7 +433,7 @@ if ($resql)
 		print '<tr class="liste_total">';
 		print '<td colspan="5" align="left">'.$langs->trans("Total").'</td>';
 		print '<td align="right" class="nowrap"><b>'.price($total).'</b></td>';
-		print '<td align="right" class="nowrap"><b>'.price($reste).'</b></td>';
+		print '<td align="right" class="nowrap"><b>'.price($total_reste).'</b></td>';
 		print '<td class="nowrap">&nbsp;</td>';
 		print '<td colspan="3">';
 		print '</td></tr>';

@@ -65,6 +65,7 @@ create table llx_commande
   fk_input_reason		integer,
   fk_delivery_address	integer,						-- delivery address (deprecated)
   import_key			varchar(14),
-  extraparams			varchar(255)					-- for stock other parameters with json format
+  extraparams			varchar(255),					-- for stock other parameters with json format
+  reste_facture_ht		double(24,8)	default 0
   
 )ENGINE=innodb;
