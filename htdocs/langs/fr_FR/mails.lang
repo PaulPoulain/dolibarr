@@ -131,3 +131,6 @@ SomeNotificationsWillBeSent=%s notifications vont être envoyées par email
 AddNewNotification=Activer une nouvelle demande de notification email
 ListOfActiveNotifications=Liste des demandes de notifications emails actives
 ListOfNotificationsDone=Liste des notifications emails envoyées
+ContactsByFunction=Contacts de tiers (par poste/fonction)
+ContactsByCompanyCategory=Contacts de tiers (par catégorie de tiers)
+ContactsByCategory=Contacts de tiers par catégorie de contact

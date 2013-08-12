@@ -82,7 +82,7 @@ if ($action == 'add')
 	    // Chargement de la classe
 	    $file = $dir."/".$module.".modules.php";
 	    $classname = "mailing_".$module;
-
+	
 		if (file_exists($file))
 		{
 			require_once $file;
@@ -90,14 +90,22 @@ if ($action == 'add')
 			// We fill $filtersarray. Using this variable is now deprecated.
 			// Kept for backward compatibility.
 			$filtersarray=array();
-			if (isset($_POST["filter"])) $filtersarray[0]=$_POST["filter"];
+			if($module == 'contacts5'){
+				
+				if (isset($_POST["filter2"])) $filtersarray[0]=$_POST["filter2"];
+				if (isset($_POST["filter3"])) $filtersarray[1]=$_POST["filter3"];
+				if (isset($_POST["filter4"])) $filtersarray[2]=$_POST["filter4"];
+			}
+			else
+			{
+				if (isset($_POST["filter"])) $filtersarray[0]=$_POST["filter"];
+			}
 
 			// Add targets into database
 			$obj = new $classname($db);
 			$result=$obj->add_to_target($id,$filtersarray);
 		}
 	}
-
 	if ($result > 0)
 	{
 		header("Location: ".$_SERVER['PHP_SELF']."?id=".$id);
@@ -111,6 +119,7 @@ if ($action == 'add')
 	{
 		$mesg='<div class="error">'.$langs->trans("Error").($obj->error?' '.$obj->error:'').'</div>';
 	}
+	
 }
 
 if (GETPOST('clearlist'))
@@ -301,7 +310,21 @@ if ($object->fetch($id) >= 0)
 
 					print '<td>';
 					if (empty($obj->picto)) $obj->picto='generic';
+					if($modulename != 'contacts5')
 					print img_object($langs->trans("Module").': '.get_class($obj),$obj->picto).' '.$obj->getDesc();
+					else
+					{
+						
+						print img_object($langs->trans("Module").': '.get_class($obj),$obj->picto);
+						print $langs->trans("ContactsByFunction");
+						print '<br><br>';
+						print img_object($langs->trans("Module").': '.get_class($obj),$obj->picto);
+						print $langs->trans("ContactsByCompanyCategory");
+						print '<br><br>';
+						print img_object($langs->trans("Module").': '.get_class($obj),$obj->picto);
+						print $langs->trans("ContactsByCategory");
+					}
+					
 					print '</td>';
 
 					/*
@@ -309,6 +332,30 @@ if ($object->fetch($id) >= 0)
 					 print $modulename;
 					 print "</td>";
 					 */
+					 if($modulename == 'contacts5'){
+					$nbofrecipient2=$obj->getNbOfRecipients2('');
+					$nbofrecipient3=$obj->getNbOfRecipients3('');
+					$nbofrecipient4=$obj->getNbOfRecipients4('');
+					
+					print '<td align="center">';
+					if ($nbofrecipient1 >= 0 || $nbofrecipient2 >= 0 || $nbofrecipient3 >= 0 ||$nbofrecipient4 >= 0)
+					{
+						
+						print $nbofrecipient2;
+						print '<br>';
+						print '<br>';
+						print $nbofrecipient3;
+						print '<br>';
+						print '<br>';
+						print $nbofrecipient4;
+					}
+					else
+					{
+						print $langs->trans("Error").' '.img_error($obj->error);
+					}
+				}
+				else
+				{
 					$nbofrecipient=$obj->getNbOfRecipients('');
 					print '<td align="center">';
 					if ($nbofrecipient >= 0)
@@ -319,12 +366,13 @@ if ($object->fetch($id) >= 0)
 					{
 						print $langs->trans("Error").' '.img_error($obj->error);
 					}
+				}
 					print '</td>';
 
 					print '<td align="left">';
 					$filter=$obj->formFilter();
 					if ($filter) print $filter;
-					else print $langs->trans("None");
+					//else print $langs->trans("None");
 					print '</td>';
 
 					print '<td align="right">';
